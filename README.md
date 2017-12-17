@@ -12,7 +12,7 @@
 | ----- |:---:| :---:|
 | Tf-Idf Similarity | 0.707 | 0.739 |
 | Direct Transfer BiLSTM | 0.568 | 0.540 |
-| Direct Transfer CNN | 0.585 |  |
+| Direct Transfer CNN | 0.595 | 0.559 |
 | Adversarial BiLSTM | 0.691 | 0.672 |
 | Adversarial CNN | 0.705 | 0.668 |
 | Adversarial GRU | 0.709 | 0.675 |
@@ -27,3 +27,12 @@ All \*\_eval.py files are for evaluating our trained best models. Simply run the
 Other python files are for training. Simpy run them using python. Code are quite self explanatory, so tweaking parameters is fairly straightforward.
 
 ## Reference
+Lei, Tao, et al. “Semi-Supervised Question Retrieval with Gated Convolutions.” [1512.05726] Semi-Supervised Question Retrieval with Gated Convolutions, 4 Apr. 2016, arxiv.org/abs/1512.05726.
+
+Ganin, Yaroslav, and Victor Lempitsky. “Unsupervised Domain Adaptation by Backpropagation.” [1409.7495] Unsupervised Domain Adaptation by Backpropagation, 27 Feb. 2015, arxiv.org/abs/1409.7495.
+
+Zhang, Yuan, et al. “Aspect-Augmented Adversarial Networks for Domain Adaptation.” [1701.00188] Aspect-Augmented Adversarial Networks for Domain Adaptation, 25 Sept. 2017, arxiv.org/abs/1701.00188.
+
+https://github.com/taolei87/askubuntu
+
+https://github.com/jiangfeng1124/Android
