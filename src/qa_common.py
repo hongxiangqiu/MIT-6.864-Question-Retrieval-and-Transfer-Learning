@@ -39,7 +39,7 @@ class Evaluation:
         return sum(scores) / len(scores) if len(scores) > 0 else 0.0
 
 
-def process_qa_batch(model, cur_batch, n_neg_samples, corpus, embeddings, volatile=False, dropout=None):
+def process_qa_batch(model, cur_batch, n_neg_samples, corpus, embeddings, volatile=False, dropout=None ,lstm=True):
     cur_batch_size = len(cur_batch)
     cur_cand_size = n_neg_samples + 2
 
@@ -64,18 +64,26 @@ def process_qa_batch(model, cur_batch, n_neg_samples, corpus, embeddings, volati
         title_emb_var = dropout(title_emb_var)
         text_emb_var = dropout(text_emb_var)
 
-    # convert to pack_padded_sequence so our rnns can run faster
-    title_pps = torch.nn.utils.rnn.pack_padded_sequence(title_emb_var, title_lengths, batch_first=True)
-    text_pps = torch.nn.utils.rnn.pack_padded_sequence(text_emb_var, text_lengths, batch_first=True)
+    if lstm:
+        # convert to pack_padded_sequence so our rnns can run faster
+        title_pps = torch.nn.utils.rnn.pack_padded_sequence(title_emb_var, title_lengths, batch_first=True)
+        text_pps = torch.nn.utils.rnn.pack_padded_sequence(text_emb_var, text_lengths, batch_first=True)
 
-    cos_sim = model(title_pps,
-                    title_length_var,
-                    title_rev, text_pps,
-                    text_length_var,
-                    text_rev,
-                    cur_batch_size,
-                    cur_cand_size)
-
+        cos_sim = model(title_pps,
+                        title_length_var,
+                        title_rev, text_pps,
+                        text_length_var,
+                        text_rev,
+                        cur_batch_size,
+                        cur_cand_size)
+    else:
+        cos_sim = model(title_emb_var,
+                        title_length_var,
+                        title_rev, text_emb_var,
+                        text_length_var,
+                        text_rev,
+                        cur_batch_size,
+                        cur_cand_size)
     return cos_sim
 
 
@@ -92,7 +100,7 @@ def train_qa_batch(model, optimizer, loss, cos_sim):
     optimizer.zero_grad()
 
 
-def get_qa_score(model, test_data, corpus, embeddings, batch_size):
+def get_qa_score(model, test_data, corpus, embeddings, batch_size, lstm=True):
     items = test_data.items
     labels = test_data.labels
 
@@ -110,7 +118,8 @@ def get_qa_score(model, test_data, corpus, embeddings, batch_size):
                                    n_neg_samples=19,
                                    corpus=corpus,
                                    embeddings=embeddings,
-                                   volatile=True)
+                                   volatile=True,
+                                   lstm=lstm)
 
         cos_sim = cos_sim.cpu().data.numpy()
 

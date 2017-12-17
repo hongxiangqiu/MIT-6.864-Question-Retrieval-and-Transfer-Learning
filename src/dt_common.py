@@ -2,7 +2,7 @@ from .common import *
 from .meter import AUCMeter
 
 
-def process_batch(model, cur_batch, n_neg_samples, corpus, embeddings, volatile=False, dropout=None, direct=False):
+def process_batch(model, cur_batch, n_neg_samples, corpus, embeddings, volatile=False, dropout=None, direct=False, lstm=True):
     cur_batch_size = len(cur_batch)
     cur_cand_size = n_neg_samples + 2
 
@@ -27,32 +27,53 @@ def process_batch(model, cur_batch, n_neg_samples, corpus, embeddings, volatile=
         title_emb_var = dropout(title_emb_var)
         text_emb_var = dropout(text_emb_var)
 
-    # convert to pack_padded_sequence so our rnns can run faster
-    title_pps = torch.nn.utils.rnn.pack_padded_sequence(title_emb_var, title_lengths, batch_first=True)
-    text_pps = torch.nn.utils.rnn.pack_padded_sequence(text_emb_var, text_lengths, batch_first=True)
+    if lstm:
+        # convert to pack_padded_sequence so our rnns can run faster
+        title_pps = torch.nn.utils.rnn.pack_padded_sequence(title_emb_var, title_lengths, batch_first=True)
+        text_pps = torch.nn.utils.rnn.pack_padded_sequence(text_emb_var, text_lengths, batch_first=True)
 
-    if not direct:
-        cos_sim, domain_labels = model(title_pps,
-                                       title_length_var,
-                                       title_rev, text_pps,
-                                       text_length_var,
-                                       text_rev,
-                                       cur_batch_size,
-                                       cur_cand_size)
+        if not direct:
+            cos_sim, domain_labels = model(title_pps,
+                                           title_length_var,
+                                           title_rev, text_pps,
+                                           text_length_var,
+                                           text_rev,
+                                           cur_batch_size,
+                                           cur_cand_size)
 
-        return cos_sim, domain_labels
-    else:
-        cos_sim = model(title_pps,
-                        title_length_var,
-                        title_rev, text_pps,
-                        text_length_var,
-                        text_rev,
-                        cur_batch_size,
-                        cur_cand_size)
-        return cos_sim
+            return cos_sim, domain_labels
+        else:
+            cos_sim = model(title_pps,
+                            title_length_var,
+                            title_rev, text_pps,
+                            text_length_var,
+                            text_rev,
+                            cur_batch_size,
+                            cur_cand_size)
+            return cos_sim
+    else:       
+        if not direct:
+            cos_sim, domain_labels = model(title_emb_var,
+                                           title_length_var,
+                                           title_rev, text_emb_var,
+                                           text_length_var,
+                                           text_rev,
+                                           cur_batch_size,
+                                           cur_cand_size)
+
+            return cos_sim, domain_labels
+        else:
+            cos_sim = model(title_emb_var,
+                            title_length_var,
+                            title_rev, text_emb_var,
+                            text_length_var,
+                            text_rev,
+                            cur_batch_size,
+                            cur_cand_size)
+            return cos_sim
 
 
-def get_target_score(model, items, corpus, embeddings, batch_size=100, direct=False):
+def get_target_score(model, items, corpus, embeddings, batch_size=100, direct=False, lstm=True):
     dev_meter = AUCMeter()
 
     tot_N = len(items)
@@ -68,7 +89,8 @@ def get_target_score(model, items, corpus, embeddings, batch_size=100, direct=Fa
                                 corpus=corpus,
                                 embeddings=embeddings,
                                 volatile=True,
-                                direct=direct)
+                                direct=direct,
+                                lstm=lstm)
 
         if not direct:
             cos_sim = cos_sim[0]
