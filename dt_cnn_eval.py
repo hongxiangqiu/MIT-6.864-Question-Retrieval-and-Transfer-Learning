@@ -49,7 +49,7 @@ dev_score = get_target_score(model=model,
 print("Similarity AUC0.05 Score (Dev):", dev_score)
 
 test_score = get_target_score(model=model,
-                             items=android_dev_train_data.get_train_items(),
+                             items=android_test_train_data.get_train_items(),
                              corpus=android_corpus,
                              embeddings=glove840b,
                              batch_size=dev_batch_size,
