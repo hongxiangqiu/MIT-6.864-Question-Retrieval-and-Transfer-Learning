@@ -2,6 +2,7 @@ from datetime import datetime
 import time
 from src import cnn
 from src.common import *
+from src.meter import AUCMeter
 
 def dt_preprocess(word):
     return word
@@ -130,5 +131,5 @@ for n_epoch in range(25):
 
     if save_to_file:
         fn = os.path.join(result_folder, "cnn_{}_{}_epoch_{}".format(batch_size, hidden_dim, n_epoch+1))
-        torch.save(model, fn + "_model")
+        #torch.save(model, fn + "_model")
         torch.save(optimizer.state_dict(), fn + "_optimizer".format(session_id, batch_size, hidden_dim, n_epoch+1))

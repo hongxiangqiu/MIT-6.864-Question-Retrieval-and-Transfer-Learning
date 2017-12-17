@@ -7,7 +7,7 @@ import sys
 
 from datetime import datetime
 import time
-
+from src.meter import AUCMeter
 
 def dt_preprocess(word):
     return word
